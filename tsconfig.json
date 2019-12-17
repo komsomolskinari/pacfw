@@ -1,0 +1,16 @@
+{
+	"include": ["src/**/*.ts"],
+	"compilerOptions": {
+		"target": "es3",
+		"module": "none",
+		"declaration": true,
+		"sourceMap": true,
+		"outFile": "./dist/index.js",
+		"rootDir": "./src",
+		"moduleResolution": "node",
+		"strict": false,
+		"esModuleInterop": true,
+		"lib": ["ScriptHost"],
+		"downlevelIteration": true
+	}
+}
