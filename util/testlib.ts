@@ -1,9 +1,4 @@
 /* eslint-disable @typescript-eslint/camelcase,@typescript-eslint/no-explicit-any */
-// eslint-disable-next-line
-var __MT__filename: string;
-// eslint-disable-next-line
-var __MT__return: string | undefined;
-
 const __MT__Unused = '49393543-91a1-48ec-ae49-b96bef60e492';
 
 declare function quit(params: number): never;
@@ -153,9 +148,9 @@ class TestResult {
 		const casename = __MT__filename + '>' + this.name;
 		if (r === this.invert) {
 			const failreason = single
-				? myJSON(this.expect) + ' ' + relation
-				: myJSON(this.expect) + ' ' + relation + ' ' + myJSON(actual);
-			report('FAIL:' + casename + ', reason:\n' + failreason);
+				? `${dumpJSON(this.expect)} ${relation}`
+				: `${dumpJSON(this.expect)} ${relation} ${dumpJSON(actual)}`;
+			report('FAIL:' + casename + ', reason:\n\t' + failreason);
 		} else {
 			log('PASS:' + casename);
 		}

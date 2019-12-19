@@ -53,8 +53,3 @@ function polyfill() {
 			return ret;
 		};
 }
-function log(s: any) {
-	if (typeof WScript !== 'undefined') WScript.Echo(s);
-	//else if (typeof alert !== "undefined") alert(s);
-	else console.log(s);
-}

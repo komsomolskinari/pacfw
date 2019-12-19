@@ -5,8 +5,7 @@
 	"main": "dist/index.js",
 	"private": true,
 	"scripts": {
-		"build": "npx tsc",
-		"build:watch": "npx tsc -w",
+		"build": "node --experimental-modules ./util/buildpac.mjs",
 		"debug:jscript": "cscript //X dist/index.js",
 		"debug:v8": "node inspect dist/index.js",
 		"debug:spidermonkey": "js dist/index.js",
