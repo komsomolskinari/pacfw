@@ -113,7 +113,7 @@ function checkEqual(o1: any, o2: any): boolean {
 		// null
 		return o1 === o2;
 	}
-	const s: string[] = [];
+	// this is for {} , or  %[]
 	for (const key in o1) {
 		if (o1.hasOwnProperty(key)) {
 			if (!o2.hasOwnProperty(key)) {
@@ -122,8 +122,11 @@ function checkEqual(o1: any, o2: any): boolean {
 			if (!checkEqual(o1[key], o2[key])) return false;
 		}
 	}
-	// this is for {} , or  %[]
-	return true;
+
+	if (o1.__proto__ == o2.__proto__) {
+		if (o1.toString?.() == o2.toString?.()) return true;
+	}
+	return false;
 }
 
 class TestResult {

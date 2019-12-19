@@ -281,7 +281,6 @@ const mint = new Mint(['keyword']);
 const no = mint.filter('keywrdstring');
 const yes = mint.filter('keywordstring');
 
-log(no.text);
 const tree = new Tree();
 tree.insert('aaa');
 tree.insert('aaaa');
