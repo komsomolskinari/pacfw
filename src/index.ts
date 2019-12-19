@@ -11,13 +11,13 @@ class Node {
 	// 节点值
 	public key: string;
 	// 是否为单词最后节点
-	public word: boolean;
+	public terminal: boolean;
 	// 父节点的引用
-	public parent: Node | undefined;
+	public parent?: Node;
 	// 子节点的引用（goto表）
 	public children: Dict<Node> = {};
 	// failure表，用于匹配失败后的跳转
-	public failure: Node | undefined = undefined;
+	public failure?: Node;
 
 	constructor(
 		key: string,
@@ -26,7 +26,7 @@ class Node {
 	) {
 		this.key = key;
 		this.parent = parent;
-		this.word = word;
+		this.terminal = word;
 	}
 }
 
@@ -55,7 +55,7 @@ class Tree {
 				? new Node(firstKey)
 				: new Node(firstKey, undefined, true);
 		} else if (!len) {
-			firstNode.word = true;
+			firstNode.terminal = true;
 		}
 
 		// 其他多余的key
@@ -83,8 +83,8 @@ class Tree {
 
 			if (!item) {
 				item = new Node(key, node, isWord);
-			} else if (!item.word) {
-				item.word = isWord;
+			} else if (!item.terminal) {
+				item.terminal = isWord;
 			}
 
 			children[key] = item;
@@ -209,7 +209,7 @@ class Mint extends Tree {
 					startIndex = endIndex;
 				}
 
-				if (nextNode.word) {
+				if (nextNode.terminal) {
 					// console.log('==>', key, startIndex, endIndex)
 					const keywordLen = endIndex - startIndex + 1;
 					isStart = isPass = false;
@@ -242,9 +242,12 @@ class Mint extends Tree {
 			searchNode = nextNode || searchNode.failure || this.root;
 			endIndex++;
 		}
-		const uniqFilter = filterKeywords.filter(
-			(v, i, a) => a.indexOf(v) === i
-		);
+		const uniqFilter = (function(arr): string[] {
+			const a = [];
+			for (let i = 0, l = arr.length; i < l; i++)
+				if (a.indexOf(arr[i]) === -1 && arr[i] !== '') a.push(arr[i]);
+			return a;
+		})(filterKeywords);
 
 		return {
 			text: replace ? filterTextArr.join('') : originalWord,
@@ -279,3 +282,9 @@ const no = mint.filter('keywrdstring');
 const yes = mint.filter('keywordstring');
 
 log(no.text);
+const tree = new Tree();
+tree.insert('aaa');
+tree.insert('aaaa');
+tree.insert('asdf');
+tree.createFailureTable();
+tree.search('asd');

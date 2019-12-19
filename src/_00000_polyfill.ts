@@ -3,71 +3,8 @@
  * Copy paste from MDN
  */
 function polyfill() {
-	if (!Array.prototype.map) {
-		Array.prototype.map = function(callback /*, thisArg*/) {
-			let T, k;
-
-			if (this == null) {
-				throw new TypeError('this is null or not defined');
-			}
-			const O = Object(this);
-			const len = O.length >>> 0;
-			if (typeof callback !== 'function') {
-				throw new TypeError(callback + ' is not a function');
-			}
-			if (arguments.length > 1) {
-				T = arguments[1];
-			}
-			const A = new Array(len);
-			k = 0;
-			while (k < len) {
-				let kValue, mappedValue;
-				if (k in O) {
-					kValue = O[k];
-					mappedValue = callback.call(T, kValue, k, O);
-					A[k] = mappedValue;
-				}
-				k++;
-			}
-			return A;
-		};
-	}
-	if (!Array.prototype.filter) {
-		Array.prototype.filter = function(func: any, thisArg: any) {
-			'use strict';
-			if (!(typeof func === 'function' && this)) throw new TypeError();
-
-			const len = this.length >>> 0,
-				res = new Array(len), // preallocate array
-				t = this;
-			let c = 0,
-				i = -1;
-			if (thisArg === undefined) {
-				while (++i !== len) {
-					// checks to see if the key was set
-					if (i in this) {
-						if (func(t[i], i, t)) {
-							res[c++] = t[i];
-						}
-					}
-				}
-			} else {
-				while (++i !== len) {
-					// checks to see if the key was set
-					if (i in this) {
-						if (func.call(thisArg, t[i], i, t)) {
-							res[c++] = t[i];
-						}
-					}
-				}
-			}
-
-			res.length = c; // shrink down array to proper size
-			return res;
-		};
-	}
 	if (!Object.keys) {
-		Object.keys = (function() {
+		Object.keys = (() => {
 			const hasOwnProperty = Object.prototype.hasOwnProperty,
 				hasDontEnumBug = !{ toString: null }.propertyIsEnumerable(
 					'toString'
@@ -107,10 +44,17 @@ function polyfill() {
 		})();
 	}
 	if (!Object['values'])
-		Object['values'] = (o: any) => Object.keys(o).map(k => o[k]);
+		Object['values'] = (o: any) => {
+			const keys = Object.keys(o);
+			const ret = [];
+			for (const iterator of keys) {
+				ret.push(o[iterator]);
+			}
+			return ret;
+		};
 }
 function log(s: any) {
-	if (typeof WScript !== "undefined") WScript.Echo(s);
+	if (typeof WScript !== 'undefined') WScript.Echo(s);
 	//else if (typeof alert !== "undefined") alert(s);
 	else console.log(s);
 }
