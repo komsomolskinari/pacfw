@@ -25,14 +25,7 @@ enum RuleType {
 	IPv4,
 	IPv6
 }
-
-interface Rule {
-	matcher: string | RegExp | boolean[];
-	type: RuleType;
-	raw: string;
-	direct: boolean; // when match, direct
-}
-function ParseIP4(ip: string, len: number): boolean[] {
+function IPv4toInt(ip: string): number {
 	const ipnums = [0, 0, 0, 0];
 	const iparray = ip.split('.');
 	let ipint = 0;
@@ -48,14 +41,80 @@ function ParseIP4(ip: string, len: number): boolean[] {
 			256 * ipnums[2] +
 			ipnums[3];
 	}
-	const ret = [];
-	for (let mask = 0x80000000, ctr = 0; ctr < len; ctr++) {
-		ret.push(ipint & mask ? true : false);
-	}
+	return ipint;
 }
-function ParseIP6(ip: string, len: number): boolean[] {}
+
+function IPv6toInt(ip: string): [number, number, number, number] {
+	const ipstr = ip.split(':');
+	const head = [];
+	const tail = [];
+	const mappedv4 = ipstr[ipstr.length - 1].indexOf('.') >= 0;
+	let inhead = true;
+	for (let index = 0; index < ipstr.length; index++) {
+		const element = ipstr[index];
+		if (element.length === 0) {
+			inhead = false;
+			continue;
+		}
+		if (inhead) head.push(element);
+		else tail.push(element);
+	}
+	// replace last 32 bit with 0
+	if (mappedv4) {
+		tail.pop();
+		tail.push('0', '0');
+	}
+	const ipint16 = [0, 0, 0, 0, 0, 0, 0, 0];
+	for (let index = 0; index < head.length; index++) {
+		const element = head[index];
+		ipint16[index] = parseInt('0x' + element);
+	}
+	for (let index = tail.length - 1, ptr = 7; index >= 0; index--, ptr--) {
+		const element = tail[index];
+		ipint16[ptr] = parseInt('0x' + element);
+	}
+	function i16i32(i1: number, i2: number): number {
+		return 65536 * i1 + i2;
+	}
+	const ipints: [number, number, number, number] = [
+		i16i32(ipint16[0], ipint16[1]),
+		i16i32(ipint16[2], ipint16[3]),
+		i16i32(ipint16[4], ipint16[5]),
+		i16i32(ipint16[6], ipint16[7])
+	];
+	if (mappedv4) ipints[3] = IPv4toInt(ipstr[ipstr.length - 1]);
+	return ipints;
+}
+
+interface Rule {
+	matcher: string | RegExp | boolean[];
+	type: RuleType;
+	raw: string;
+	direct: boolean; // when match, direct
+}
+
+function Int32toBoolArray(int: number): boolean[] {
+	const ret = [];
+	for (let mask = 0x80000000, ctr = 0; ctr < 32; ctr++, mask >>>= 1) {
+		ret.push((int & mask) !== 0 ? true : false);
+	}
+	return ret;
+}
+function ParseIPv4(ip: string, len: number): boolean[] {
+	const ipint = IPv4toInt(ip);
+	return Int32toBoolArray(ipint).slice(0, len);
+}
+function ParseIPv6(ip: string, len: number): boolean[] {
+	const bin = [];
+	const int = IPv6toInt(ip);
+	for (let index = 0; index < int.length; index++) {
+		const element = Int32toBoolArray(int[index]);
+		bin.push(...element);
+	}
+	return bin.slice(0, len);
+}
 function ParseIP(ip: string, len: number, v4 = true): boolean[] {
-	return v4 ? ParseIP4(ip, len) : ParseIP6(ip, len);
+	return v4 ? ParseIPv4(ip, len) : ParseIPv6(ip, len);
 }
 function ParseRule(str: string): Rule | undefined {
 	let matcher: string | RegExp | boolean[] = str;

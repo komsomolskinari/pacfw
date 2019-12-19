@@ -21,7 +21,7 @@ function compileTestCase(src) {
 		: []; // trim
 	const headsrc = EMITROOT + src + '_head.ts';
 	const out = EMITROOT + src + '.js';
-	const head = `var __MT__filename = "${src}";\n`;
+	const head = 'var __MT__filename = "' + src + '";\n';
 
 	fs.writeFileSync(headsrc, head);
 	//fs.writeFileSync(tailsrc, tail);
@@ -59,19 +59,17 @@ const engines = {
 tests.forEach(s => {
 	console.log(`=====${s}=====`);
 	const o = compileTestCase(s);
-	console.log(`...........`);
 	Object.keys(engines).forEach(p => {
 		try {
+			console.log(`...........`);
 			console.log('<' + p + '>');
-			console.log(
-				ps
-					.execSync(engines[p] + ' ' + o, { stdio: [0, 1, 0] })
-					.toLocaleString()
-			);
-			console.log('<success>');
+			const retstr = ps.execSync(engines[p] + ' ' + o, {
+				stdio: [0, 1, 2]
+			});
+			if (retstr !== null) console.log(retstr.toLocaleString());
+			console.log('<PASS>');
 		} catch {
-			console.log('<error>');
+			console.log('<FAIL>');
 		}
-		console.log(`...........`);
 	});
 });
