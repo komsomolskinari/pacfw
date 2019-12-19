@@ -16,15 +16,7 @@
  * none         | proxy | direct    | direct
  * direct       | proxy | direct    | direct
  */
-enum RuleType {
-	Comment,
-	Domain,
-	String,
-	Regexp,
-	Prefix,
-	IPv4,
-	IPv6
-}
+
 function IPv4toInt(ip: string): number {
 	const ipnums = [0, 0, 0, 0];
 	const iparray = ip.split('.');
@@ -43,7 +35,6 @@ function IPv4toInt(ip: string): number {
 	}
 	return ipint;
 }
-
 function IPv6toInt(ip: string): [number, number, number, number] {
 	const ipstr = ip.split(':');
 	const head = [];
@@ -85,14 +76,6 @@ function IPv6toInt(ip: string): [number, number, number, number] {
 	if (mappedv4) ipints[3] = IPv4toInt(ipstr[ipstr.length - 1]);
 	return ipints;
 }
-
-interface Rule {
-	matcher: string | RegExp | boolean[];
-	type: RuleType;
-	raw: string;
-	direct: boolean; // when match, direct
-}
-
 function Int32toBoolArray(int: number): boolean[] {
 	const ret = [];
 	for (let mask = 0x80000000, ctr = 0; ctr < 32; ctr++, mask >>>= 1) {
@@ -100,11 +83,14 @@ function Int32toBoolArray(int: number): boolean[] {
 	}
 	return ret;
 }
-function ParseIPv4(ip: string, len: number): boolean[] {
+
+function ParseIPv4(ip: string, len = 0): boolean[] {
+	if (len === 0) len = 32;
 	const ipint = IPv4toInt(ip);
 	return Int32toBoolArray(ipint).slice(0, len);
 }
-function ParseIPv6(ip: string, len: number): boolean[] {
+function ParseIPv6(ip: string, len = 0): boolean[] {
+	if (len === 0) len = 128;
 	const bin = [];
 	const int = IPv6toInt(ip);
 	for (let index = 0; index < int.length; index++) {
@@ -113,7 +99,7 @@ function ParseIPv6(ip: string, len: number): boolean[] {
 	}
 	return bin.slice(0, len);
 }
-function ParseIP(ip: string, len: number, v4 = true): boolean[] {
+function ParseIP(ip: string, len = 0, v4 = true): boolean[] {
 	return v4 ? ParseIPv4(ip, len) : ParseIPv6(ip, len);
 }
 
@@ -124,8 +110,29 @@ function ParseRegex(re: string): RegExp {
 	return new RegExp(m, flag);
 }
 
+enum RuleType {
+	Comment,
+	Domain,
+	String,
+	Regexp,
+	Prefix,
+	IPv4,
+	IPv6
+}
+type RuleMatcher =
+	| string // basic
+	| RegExp // Regexp
+	| boolean[] // IP
+	| string[]; // asterisk
+interface Rule {
+	matcher: RuleMatcher;
+	type: RuleType;
+	raw: string;
+	direct: boolean; // when match, direct
+}
+
 function ParseRule(str: string): Rule | undefined {
-	let matcher: string | RegExp | boolean[] = str;
+	let matcher: RuleMatcher = str;
 	let direct = false;
 	let type = RuleType.String;
 	const raw = str;
@@ -166,6 +173,18 @@ function ParseRule(str: string): Rule | undefined {
 		let bitlen = parseInt(bitstr);
 		if (bitlen === 0) bitlen = type === RuleType.IPv4 ? 32 : 128;
 		matcher = ParseIP(ipstr, bitlen, type === RuleType.IPv4);
+	}
+
+	if (typeof matcher === 'string' && matcher.indexOf('*') > 0) {
+		switch (type) {
+			case RuleType.Domain:
+			case RuleType.Prefix:
+			case RuleType.String:
+				matcher = matcher.split('*');
+				break;
+			default:
+				break;
+		}
 	}
 	return { matcher, direct, type, raw };
 }
