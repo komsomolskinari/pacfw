@@ -48,7 +48,7 @@ function compileTestCase(src) {
 	buildsrc(srcs, options);
 	return out;
 }
-console.log('Multi engine unit test tool v0.0.1-201912191513');
+console.log('Multi engine unit test tool v0.0.1-201912191817');
 
 const tests = fs.readdirSync(TESTROOT);
 const engines = {
@@ -60,15 +60,14 @@ tests.forEach(s => {
 	console.log(`=====${s}=====`);
 	const o = compileTestCase(s);
 	Object.keys(engines).forEach(p => {
+		const logfile = o + '.' + p + '.log';
 		try {
 			console.log(`...........`);
 			console.log('<' + p + '>');
-			const retstr = ps.execSync(engines[p] + ' ' + o, {
-				stdio: [0, 1, 2]
-			});
-			if (retstr !== null) console.log(retstr.toLocaleString());
+			ps.execSync(engines[p] + ' ' + o + '> ' + logfile);
 			console.log('<PASS>');
 		} catch {
+			console.log(fs.readFileSync(logfile).toLocaleString());
 			console.log('<FAIL>');
 		}
 	});

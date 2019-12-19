@@ -90,6 +90,7 @@ function dumpJSON(obj: any): string {
 }
 
 function checkEqual(o1: any, o2: any): boolean {
+	if (typeof o1 !== typeof o2) return false;
 	switch (typeof o1) {
 		case 'boolean': // true & false
 		case 'bigint':
@@ -129,19 +130,18 @@ function checkEqual(o1: any, o2: any): boolean {
 	return false;
 }
 
-class TestResult {
+class TestResult<T> {
 	name: string;
-	expect: any;
+	expect: T;
 	invert: boolean;
 	filename: string;
-	constructor(name: string, filename, expect, invert = false) {
+	constructor(name: string, expect: T, invert = false) {
 		this.name = name;
 		this.expect = expect;
 		this.invert = invert;
-		this.filename = filename;
 	}
-	not(): TestResult {
-		return new TestResult(this.name, this.expect, !this.invert);
+	not(): TestResult<T> {
+		return new TestResult<T>(this.name, this.expect, !this.invert);
 	}
 	private base(actual: any, message: string, comp: Function): void {
 		const single = actual === __MT__Unused;
@@ -158,10 +158,10 @@ class TestResult {
 			log('PASS:' + casename);
 		}
 	}
-	equal(actual: any): void {
+	equal(actual: T): void {
 		this.base(actual, 'equal', checkEqual);
 	}
-	same(actual: any): void {
+	same(actual: T): void {
 		this.base(actual, 'same', (a, b) => a === b);
 	}
 	truthy(): void {
@@ -169,9 +169,9 @@ class TestResult {
 	}
 }
 
-function test(name: string, expect: any): TestResult {
+function test<T>(name: string, expect: T): TestResult<T> {
 	try {
-		return new TestResult(name, __MT__filename, expect);
+		return new TestResult<T>(name, expect);
 	} catch (e) {
 		//error(e.message);
 		if (__MT__return === undefined) __MT__return = e;

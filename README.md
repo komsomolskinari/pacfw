@@ -3,11 +3,17 @@
 **IE6 WEB DEVELOPER WANTED**
 
 ## Developement
-0. Make sure you are familiar with JavaScript (I mean ECMAScript 3)
-1. Install NPM, [JavaScriptShell], VSCode and Visual Studio
-2. Clone repository
-3. `npm i`
-4. Edit and `npm run build`
-5. `npm run debug:jscript` to debug in WSH
+
+See `package.json` for build and test instruction
+
+### Requirement
+- Windows (This project is Windows only, because of JScript)
+- Node.js (with NPM)
+- [JavaScriptShell]
+- Visual Studio (because of JScript debugging)
+- VSCode is suggested
+
+### About test
+No existing test framework met my requirement(running on JScript engines, has typescript support), so I built one.
 
 [JavaScriptShell]:https://archive.mozilla.org/pub/firefox/nightly/latest-mozilla-central/

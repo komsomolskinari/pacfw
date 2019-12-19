@@ -116,10 +116,18 @@ function ParseIPv6(ip: string, len: number): boolean[] {
 function ParseIP(ip: string, len: number, v4 = true): boolean[] {
 	return v4 ? ParseIPv4(ip, len) : ParseIPv6(ip, len);
 }
+
+function ParseRegex(re: string): RegExp {
+	const flagStart = re.lastIndexOf('/');
+	const flag = re.substr(flagStart + 1);
+	const m = re.substr(1, flagStart - 1);
+	return new RegExp(m, flag);
+}
+
 function ParseRule(str: string): Rule | undefined {
 	let matcher: string | RegExp | boolean[] = str;
 	let direct = false;
-	let type = RuleType.Comment;
+	let type = RuleType.String;
 	const raw = str;
 	if (str.substr(0, 3) === '!##') {
 		matcher = str.substr(3);
@@ -129,7 +137,7 @@ function ParseRule(str: string): Rule | undefined {
 		matcher = str.substr(2);
 		type = RuleType.IPv4;
 		direct = false;
-	} else if (str[0] === '!') {
+	} else if (str.substr(0, 1) === '!') {
 		return undefined;
 	}
 	if (str.substr(0, 2) === '@@') {
@@ -141,12 +149,12 @@ function ParseRule(str: string): Rule | undefined {
 	if (str.substr(0, 2) === '||') {
 		type = RuleType.Domain;
 		matcher = str.substr(2);
-	} else if (str[0] === '|') {
+	} else if (str.substr(0, 1) === '|') {
 		type = RuleType.Prefix;
 		matcher = str.substr(1);
-	} else if (str[0] === '/') {
+	} else if (str.substr(0, 1) === '/') {
 		type = RuleType.Regexp;
-		matcher = new RegExp(str);
+		matcher = ParseRegex(str);
 	}
 
 	if (type == RuleType.IPv4) {
