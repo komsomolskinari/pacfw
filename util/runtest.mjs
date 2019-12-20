@@ -1,4 +1,5 @@
-import buildsrc from './buildsrc.mjs';
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { buildsrc, resolveDependency } from './buildsrc.mjs';
 import ts from 'typescript';
 import * as fs from 'fs';
 import * as ps from 'child_process';
@@ -7,24 +8,12 @@ const EMITROOT = './dist/_mytest/';
 const TESTLIB = './util/testlib.ts';
 function compileTestCase(src) {
 	const testsrc = TESTROOT + src;
-	const l1 = fs
-		.readFileSync(testsrc)
-		.toLocaleString()
-		.split('\n', 1)[0]; // line1
-	const useimport = l1.substr(0, 3) === '///';
-
-	const codefiles = useimport
-		? l1
-				.substr(3) // remove comment
-				.split(',') // split by ,
-				.map(s => s.trim())
-		: []; // trim
+	const codefiles = resolveDependency(testsrc);
 	const headsrc = EMITROOT + src + '_head.ts';
 	const out = EMITROOT + src + '.js';
 	const head = 'var __MT__filename = "' + src + '";\n';
 
 	fs.writeFileSync(headsrc, head);
-	//fs.writeFileSync(tailsrc, tail);
 	// load order make sense
 	const srcs = [
 		headsrc,
@@ -49,7 +38,9 @@ function compileTestCase(src) {
 	return out;
 }
 console.log('Multi engine unit test tool v0.0.1-201912191817');
-
+try {
+	fs.mkdirSync(EMITROOT);
+} catch {}
 const tests = fs.readdirSync(TESTROOT);
 const engines = {
 	V8: 'node',

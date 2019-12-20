@@ -1,7 +1,7 @@
 import ts from 'typescript';
 import * as fs from 'fs';
-import buildsrc from './buildsrc.mjs';
-const src = fs.readdirSync('src').map(f => './src/' + f);
+import { buildsrc, resolveDependency } from './buildsrc.mjs';
+const src = resolveDependency('src/index.ts'); //fs.readdirSync('src').map(f => './src/' + f);
 const option = {
 	allowJs: true,
 	module: ts.ModuleKind.None,

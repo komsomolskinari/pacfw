@@ -1,6 +1,81 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import ts from 'typescript';
+import * as fs from 'fs';
+import * as path from 'path';
 
-export default function buildsrc(src, option) {
+export function directDependency(src) {
+	const cwd = path.dirname(src);
+	const l1 = fs
+		.readFileSync(src)
+		.toLocaleString()
+		.split('\n', 1)[0]; // line1
+	const useimport = l1.substr(0, 3) === '///';
+
+	return useimport
+		? l1
+				.substr(3) // remove comment
+				.split(',') // split by ,
+				.map(s => s.trim())
+				.map(s => path.join(cwd, s))
+		: []; // trim
+}
+
+export function resolveDependency(src) {
+	src = path.join('.', src);
+	const depGraph = {};
+	depGraph[src] = directDependency(src);
+
+	function checkDep() {
+		let ctr = 0;
+		Object.keys(depGraph).forEach(k => {
+			const val = depGraph[k];
+			val.forEach(v => {
+				// loaded
+				if (typeof depGraph[v] !== 'undefined') {
+					return;
+				}
+				// not loaded, load
+				ctr++;
+				depGraph[v] = directDependency(v);
+			});
+		});
+		return ctr == 0;
+	}
+	while (!checkDep());
+	//console.log(depGraph);
+
+	const order = {};
+	function checkOrder(file, base) {
+		if (base > 100) throw new RangeError('Possible recursive dependency');
+		if (order[file] === undefined || base > order[file]) order[file] = base;
+		const deps = depGraph[file];
+		deps.forEach(d => checkOrder(d, base + 1));
+	}
+	order[src] = 1;
+	checkOrder(src, 1);
+	//console.log(order);
+
+	const orderGroup = {};
+	Object.keys(order).forEach(k => {
+		const v = order[k];
+		if (orderGroup[v] === undefined) orderGroup[v] = [];
+		orderGroup[v].push(k);
+	});
+	//console.log(orderGroup);
+
+	const ranges = Object.keys(orderGroup).map(k => parseInt(k));
+	const max = Math.max(...ranges);
+	const min = Math.min(...ranges);
+
+	const flated = [];
+	for (let p = max; p >= min; p--) {
+		flated.push(...orderGroup[p]);
+	}
+	//console.log(flated);
+	return flated;
+}
+
+export function buildsrc(src, option) {
 	const program = ts.createProgram(src, option);
 	const emitResult = program.emit();
 
@@ -37,3 +112,5 @@ export default function buildsrc(src, option) {
 	console.log('Compile success');
 	return;
 }
+
+resolveDependency('./test/rule.test.ts');
