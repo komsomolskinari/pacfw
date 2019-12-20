@@ -89,7 +89,7 @@ function dumpJSON(obj: any): string {
 	} else return myJSON(obj);
 }
 
-function checkEqual(o1: any, o2: any): boolean {
+function checkEqual(o1: any, o2: any, order = false): boolean {
 	if (typeof o1 !== typeof o2) return false;
 	switch (typeof o1) {
 		case 'boolean': // true & false
@@ -105,8 +105,16 @@ function checkEqual(o1: any, o2: any): boolean {
 	if (isarray(o1)) {
 		// []
 		if (o1.length !== o2.length) return false;
-		for (let index = 0; index < o1.length; index++) {
-			if (!checkEqual(o1[index], o2[index])) return false;
+		for (let i = 0; i < o1.length; i++) {
+			if (!order) {
+				if (!checkEqual(o1[i], o2[i])) return false;
+			} else {
+				let atLeastOne = false;
+				for (let j = 0; j < o2.length; j++) {
+					if (checkEqual(o1[i], o2[j])) atLeastOne = true;
+				}
+				if (!atLeastOne) return false;
+			}
 		}
 		return true;
 	}
@@ -163,6 +171,10 @@ class TestResult<T> {
 	}
 	same(actual: T): void {
 		this.base(actual, 'same', (a, b) => a === b);
+	}
+	// Compare array,ignore order
+	sameContent(actual: T): void {
+		this.base(actual, 'equal', (a, b) => checkEqual(a, b, true));
 	}
 	truthy(): void {
 		this.base(__MT__Unused, 'truthy', a => (a ? true : false));

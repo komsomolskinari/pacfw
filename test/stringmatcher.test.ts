@@ -3,6 +3,7 @@
 const rules = [
 	'||google.com',
 	'@@||api.aixcoder',
+	'||api.ai',
 	'@@baidu.com',
 	'||facebook.com'
 ];
@@ -23,3 +24,8 @@ for (const key in rules) {
 test('match string', sm.search('google.com')).equal([
 	ParseRule('||google.com')
 ]);
+test('match multiple rule', sm.search('api.aixcoder.com')).sameContent([
+	ParseRule('@@||api.aixcoder'),
+	ParseRule('||api.ai')
+]);
+test('match empty', sm.search('github.com')).equal([]);
