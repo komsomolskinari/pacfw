@@ -1,0 +1,12 @@
+{
+	"allowJs": true,
+	"module": 0,
+	"target": 0,
+	"sourceMap": true,
+	"declaration": true,
+	"strict": false,
+	"outFile": "./dist/index.js",
+	"esModuleInterop": true,
+	"moduleResolution": 2,
+	"lib": []
+}

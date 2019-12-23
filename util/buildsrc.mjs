@@ -25,6 +25,7 @@ export function resolveDependency(src) {
 	const depGraph = {};
 	depGraph[src] = directDependency(src);
 
+	// check all loaded files' dep, if has not loaded, load
 	function checkDep() {
 		let ctr = 0;
 		Object.keys(depGraph).forEach(k => {
@@ -45,6 +46,7 @@ export function resolveDependency(src) {
 	//console.log(depGraph);
 
 	const order = {};
+	// calc dep depth tree
 	function checkOrder(file, base) {
 		if (base > 100) throw new RangeError('Possible recursive dependency');
 		if (order[file] === undefined || base > order[file]) order[file] = base;
@@ -56,6 +58,7 @@ export function resolveDependency(src) {
 	//console.log(order);
 
 	const orderGroup = {};
+	// group by depth
 	Object.keys(order).forEach(k => {
 		const v = order[k];
 		if (orderGroup[v] === undefined) orderGroup[v] = [];
@@ -67,6 +70,7 @@ export function resolveDependency(src) {
 	const max = Math.max(...ranges);
 	const min = Math.min(...ranges);
 
+	// output from depest
 	const flated = [];
 	for (let p = max; p >= min; p--) {
 		flated.push(...orderGroup[p]);
@@ -113,4 +117,8 @@ export function buildsrc(src, option) {
 	return;
 }
 
-resolveDependency('./test/rule.test.ts');
+export function build(src, optionfile = './util/option.json') {
+	const f = fs.readFileSync(optionfile);
+	const option = JSON.parse(f);
+	buildsrc(resolveDependency(src), option);
+}

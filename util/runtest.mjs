@@ -43,7 +43,7 @@ try {
 } catch {}
 const tests = fs.readdirSync(TESTROOT);
 const engines = {
-	V8: 'node',
+	V8: 'node --experimental-modules',
 	JScript: 'cscript //Nologo',
 	SpiderMonkey: 'js'
 };

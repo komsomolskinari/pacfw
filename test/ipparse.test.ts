@@ -2,6 +2,10 @@
 
 test('ipv4 int 127.1', IPv4toInt('127.1')).equal(0x7f000001);
 
+test('ipv4 int host1', IPv4toInt('www.baidu.com')).equal(undefined);
+test('ipv4 int host2', IPv4toInt('1.2.com')).equal(undefined);
+test('ipv4 int host3', IPv4toInt('computer')).equal(undefined);
+
 test('ipv4 127.1', ParseIPv4('127.0.0.1', 8)).equal([
 	false,
 	true,
@@ -75,3 +79,8 @@ for (let index = 0; index < 32; index++) {
 	true32.push(true);
 }
 test('ipv6 ffff:ffff/32', ParseIPv6('ffff:ffff::', 32)).equal(true32);
+test('ipv6 int host1', IPv6toInt('www.baidu.com')).equal(undefined);
+test('ipv6 int host2', IPv6toInt('1.2.com')).equal(undefined);
+test('ipv6 int host3', IPv6toInt('computer')).equal(undefined);
+test('ipv6 int host4', IPv6toInt('aaaa')).equal(undefined);
+test('parse host', ParseIP('www.baidu.com')).equal(undefined);

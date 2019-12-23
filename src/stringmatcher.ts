@@ -1,3 +1,4 @@
+/// ./rule.ts
 /* Applied type
  * Domain,
  * String,

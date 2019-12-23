@@ -1,3 +1,4 @@
+/// ./rule.ts
 /* Applied type ('*' included only)
  * Domain,
  * String,
@@ -18,14 +19,17 @@ class AsteriskMatcher {
 		const ret = [];
 		for (const k in this.data) {
 			if (this.data.hasOwnProperty(k)) {
-				const [key, value] = this.data[k];
+				const [sections, rule] = this.data[k];
 				let p = 0;
-				for (let index = 0; index < key.length; index++) {
-					const k = key[index];
+				// foreach section
+				for (let index = 0; index < sections.length; index++) {
+					const k = sections[index];
+					// match a section
 					p = str.indexOf(k, p);
 					if (p < 0) break;
 				}
-				if (p >= 0) ret.push(value);
+				// sucess only all section sucess
+				if (p >= 0) ret.push(rule);
 			}
 		}
 		return ret;
