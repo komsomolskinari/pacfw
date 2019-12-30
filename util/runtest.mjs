@@ -16,6 +16,8 @@ function compileTestCase(src) {
 	fs.writeFileSync(headsrc, head);
 	// load order make sense
 	const srcs = [
+		'util/pacruntime/runtime.ts',
+		'util/context/env.ts',
 		headsrc,
 		'./util/test_start.ts',
 		TESTLIB,

@@ -32,12 +32,10 @@ class CombinedMatcher {
 
 	search(str: string): Rule[] {
 		const isName = ParseIP(str) === undefined;
-		if (isName) {
-			// dns resolve
-		}
+		const ip = isName ? dnsResolve(str) : str;
+		const ipmatcher = ip.indexOf(':') >= 0 ? this.ip6m : this.ip4m;
 		return [
-			...this.ip4m.search(str),
-			...this.ip6m.search(str),
+			...ipmatcher.search(ip),
 			...this.stringm.search(str),
 			...this.asteriskm.search(str),
 			...this.regexm.search(str)

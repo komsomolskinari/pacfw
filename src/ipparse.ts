@@ -94,9 +94,7 @@ function ParseIPv6(ip: string, len = 0): boolean[] {
 }
 function ParseIP(ip: string, len = 0, v4?: boolean): boolean[] {
 	if (v4 === undefined) {
-		const p4 = ParseIPv4(ip, len);
-		const p6 = ParseIPv6(ip, len);
-		return p4 ?? p6;
+		v4 = ip.indexOf(':') >= 0;
 	}
 	return v4 ? ParseIPv4(ip, len) : ParseIPv6(ip, len);
 }

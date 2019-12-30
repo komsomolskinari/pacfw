@@ -1,22 +1,18 @@
-// Not used yet, only for information
-export declare function isPlainHostName(host: string): boolean;
-export declare function dnsDomainIs(host: string, domain: string): boolean;
-export declare function localHostOrDomainIs(
-	host: string,
-	hostdom: string
-): boolean;
-export declare function isResolvable(host: string): boolean;
-export declare function isInNet(
+declare function isPlainHostName(host: string): boolean;
+declare function dnsDomainIs(host: string, domain: string): boolean;
+declare function localHostOrDomainIs(host: string, hostdom: string): boolean;
+declare function isResolvable(host: string): boolean;
+declare function isInNet(
 	ipaddr: string,
 	pattern: string,
 	maskstr: string
 ): boolean;
 
-export declare function dnsResolve(host: string): string;
-export declare function convert_addr(ipchars: string): number; //eslint-disable-line @typescript-eslint/camelcase
-export declare function myIPAddress(): string;
-export declare function dnsDomainLevels(host: string): number;
-export declare function shExpMatch(url: string, pattern: string): string;
+declare function dnsResolve(host: string): string;
+declare function convert_addr(ipchars: string): number; //eslint-disable-line @typescript-eslint/camelcase
+declare function myIPAddress(): string;
+declare function dnsDomainLevels(host: string): number;
+declare function shExpMatch(url: string, pattern: string): string;
 
 type Weekdays = 'SUN' | 'MON' | 'TUE' | 'WED' | 'THU' | 'FRI' | 'SAT';
 
@@ -67,39 +63,32 @@ type Months =
 	| 'NOV'
 	| 'DEC';
 // #region weekdayRange
-export declare function weekdayRange(w1: Weekdays, gmt?: 'GMT'): boolean;
-export declare function weekdayRange(
-	w1: Weekdays,
-	w2: Weekdays,
-	gmt?: 'GMT'
-): boolean;
+declare function weekdayRange(w1: Weekdays, gmt?: 'GMT'): boolean;
+declare function weekdayRange(w1: Weekdays, w2: Weekdays, gmt?: 'GMT'): boolean;
 // #endregion
 
 // #region dateRange
-export declare function dateRange(
-	ymd: Days | Months | number,
-	gmt?: 'GMT'
-): boolean;
-export declare function dateRange(
+declare function dateRange(ymd: Days | Months | number, gmt?: 'GMT'): boolean;
+declare function dateRange(
 	yd1: Days | number,
 	yd2: Days | number,
 	gmt?: 'GMT'
 ): boolean;
-export declare function dateRange(
+declare function dateRange(
 	d1: Days,
 	m1: Months,
 	d2: Days,
 	m2: Months,
 	gmt?: 'GMT'
 ): boolean;
-export declare function dateRange(
+declare function dateRange(
 	m1: Months,
 	y1: number,
 	m2: Months,
 	y2: number,
 	gmt?: 'GMT'
 ): boolean;
-export declare function dateRange(
+declare function dateRange(
 	d1: Days,
 	m1: Months,
 	y1: number,
@@ -108,23 +97,19 @@ export declare function dateRange(
 	y2: number,
 	gmt?: 'GMT'
 ): boolean;
-export declare function dateRange(m1: Months, m2: Months, gmt?: 'GMT'): boolean;
+declare function dateRange(m1: Months, m2: Months, gmt?: 'GMT'): boolean;
 // #endregion
 
 // #region timeRange
-export declare function timeRange(
-	h1: number,
-	h2?: number,
-	gmt?: 'GMT'
-): boolean;
-export declare function timeRange(
+declare function timeRange(h1: number, h2?: number, gmt?: 'GMT'): boolean;
+declare function timeRange(
 	h1: number,
 	m1: number,
 	h2: number,
 	m2: number,
 	gmt?: 'GMT'
 ): boolean;
-export declare function timeRange(
+declare function timeRange(
 	h1: number,
 	m1: number,
 	s1: number,
@@ -135,5 +120,5 @@ export declare function timeRange(
 ): boolean;
 // #endregion
 
-export declare function alert(msg: string): void;
-export declare function isValidIpAddress(ipchars: string): boolean;
+declare function alert(msg: string): void;
+declare function isValidIpAddress(ipchars: string): boolean;
