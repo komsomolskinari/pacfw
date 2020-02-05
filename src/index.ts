@@ -1,31 +1,25 @@
 /// ./ruleparser.ts
+let smart: Smart;
 class Smart {
 	w = 'DIRECT';
 	b = __PROXY__;
-	g = 'DIRECT;' + __PROXY__;
-	regex = {
-		white: {
-			domain: new RegExp(regex.white.domain),
-			url: new RegExp(regex.white.url)
-		},
-		black: {
-			pureip: new RegExp(regex.black.pureip),
-			domain: new RegExp(regex.black.domain),
-			url: new RegExp(regex.black.url)
-		}
-	};
+	g = 'DIRECT';
+	regex = parseGFWList(__RULES__);
 	chsips: [number, number, number][] = [];
+
+	constructor(rules: string[], proxy: string) {
+		(this.b = proxy), (this.regex = parseGFWList(__RULES__));
+	}
 	getProxy(url, host): string {
 		let proxy = this.g;
-		if (this.regex.white.domain.test(host)) proxy = this.w;
-		else if (this.regex.white.url.test(url)) proxy = this.w;
+		if (this.regex.white.domain?.test(host)) proxy = this.w;
+		else if (this.regex.white.url?.test(url)) proxy = this.w;
 		else if (!isResolvable(host)) proxy = this.b;
 		else {
 			const ip = dnsResolve(host);
 			if (ip == null) proxy = this.b;
-			else if (this.regex.black.domain.test(host)) proxy = this.b;
-			else if (this.regex.black.url.test(url)) proxy = this.b;
-			else if (this.regex.black.pureip.test(host)) proxy = this.b;
+			else if (this.regex.black.domain?.test(host)) proxy = this.b;
+			else if (this.regex.black.url?.test(url)) proxy = this.b;
 			else {
 				// convert_addr
 				const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(
@@ -56,7 +50,7 @@ class Smart {
 		return proxy;
 	}
 }
-const smart = new Smart();
+smart = new Smart(__RULES__, __PROXY__);
 function FindProxyForURL(url, host): string {
 	return smart.getProxy(url, host);
 }

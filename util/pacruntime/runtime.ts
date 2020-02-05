@@ -1,18 +1,21 @@
-function dnsResolve(host: string): string {
-	const prog =
-		'node --experimental-modules ./util/pacruntime/resolve.mjs ' + host;
+function runCommand(cmd: string): string {
 	let retTxt: string;
 	if (typeof WScript !== 'undefined') {
+		// wsh jscript
 		const shell = WScript.CreateObject('WScript.Shell');
-		const result = shell.Exec(prog);
+		const result = shell.Exec(cmd);
 		retTxt = result.StdOut.ReadAll() as string;
 	} else {
+		// node v8
 		retTxt = require('child_process')
-			.execSync(prog)
+			.execSync(cmd)
 			.toString();
 	}
-	retTxt = retTxt.trim();
-	return retTxt.length === 0 ? null : retTxt;
+	return retTxt.trim();
+}
+
+function dnsResolve(host: string): string {
+	return '1.1.1.1';
 }
 function myIPAddress(): string {
 	return '127.0.0.1';
