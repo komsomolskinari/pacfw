@@ -1,7 +1,7 @@
 {
 	"name": "pacfw",
-	"version": "0.0.1",
-	"description": "A simple PAC For WSH",
+	"version": "0.1.0",
+	"description": "A simple PAC",
 	"main": "dist/index.js",
 	"private": true,
 	"scripts": {
@@ -21,7 +21,7 @@
 	"files": [
 		"/dist"
 	],
-	"license": "0BSD",
+	"license": "LGPL-3.0",
 	"devDependencies": {
 		"@types/node": "^12.12.21",
 		"@typescript-eslint/eslint-plugin": "^2.12.0",
