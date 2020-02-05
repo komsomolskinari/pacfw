@@ -1,15 +1,8 @@
 /// ./ruleparser.ts
-
-const proxy = {
-	white: 'DIRECT',
-	black: __PROXY__,
-	gray: 'DIRECT;' + __PROXY__
-};
-
 class Smart {
-	w = proxy.white;
-	b = proxy.black;
-	g = proxy.gray;
+	w = 'DIRECT';
+	b = __PROXY__;
+	g = 'DIRECT;' + __PROXY__;
 	regex = {
 		white: {
 			domain: new RegExp(regex.white.domain),
@@ -22,7 +15,7 @@ class Smart {
 		}
 	};
 	chsips: [number, number, number][] = [];
-	getProxy(url, host) {
+	getProxy(url, host): string {
 		let proxy = this.g;
 		if (this.regex.white.domain.test(host)) proxy = this.w;
 		else if (this.regex.white.url.test(url)) proxy = this.w;
@@ -30,19 +23,11 @@ class Smart {
 		else {
 			const ip = dnsResolve(host);
 			if (ip == null) proxy = this.b;
-			/*else if (
-				isInNet(ip, '10.0.0.0', '255.0.0.0') ||
-				isInNet(ip, '172.16.0.0', '255.240.0.0') ||
-				isInNet(ip, '192.168.0.0', '255.255.0.0') ||
-				isInNet(ip, '127.0.0.0', '255.255.255.0')
-			)
-				proxy = this.w;*/ else if (
-				this.regex.black.domain.test(host)
-			)
-				proxy = this.b;
+			else if (this.regex.black.domain.test(host)) proxy = this.b;
 			else if (this.regex.black.url.test(url)) proxy = this.b;
 			else if (this.regex.black.pureip.test(host)) proxy = this.b;
 			else {
+				// convert_addr
 				const m = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(
 					ip
 				);
@@ -51,11 +36,12 @@ class Smart {
 					(parseInt(m[2], 10) << 16) +
 					(parseInt(m[3], 10) << 8) +
 					parseInt(m[4], 10);
-				let c,
+				// binary search in ip range
+				let c: number,
 					l = 0,
 					r = this.chsips.length;
 				if (r > 0) {
-					while (l != (c = Math.floor((l + r) / 2))) {
+					while (l != (c = (l + r) >> 1)) {
 						if (this.chsips[c][0] > ipnum) r = c;
 						else l = c;
 					}

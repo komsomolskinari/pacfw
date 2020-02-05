@@ -35,9 +35,9 @@ const regex = {
 const reComment = /^(\[.*\]|[ \f\n\r\t\v]*|\!.*)$/;
 const reInitial = /^\|https?:\/\/[0-9a-zA-Z-_.*?&=%~/:]+$/;
 const rePureip = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
-const reDomain = /^\|\|[0-9a-zA-Z-.*]+\/?$/; // 明确的domain中有可能包含*通配符
+const reDomain = /^\|\|[0-9a-zA-Z-.*]+\/?$/;
 const reRegex = /^\/.*\/$/;
-const reDomain2 = /^[0-9a-zA-Z-.]+$/; // 经常有domain混在url模式中，此时*通配符通常与url相关
+const reDomain2 = /^[0-9a-zA-Z-.]+$/;
 const reAnywhere = /^[0-9a-zA-Z-_.*?&=%~/:]+$/;
 const reGroup = /\|/g;
 
@@ -61,13 +61,13 @@ for (let line of rule) {
 	}
 	//else if (rePureip.test(line)) list.pureip.push(line); // it's not pure ip, it's string rule
 	else if (reDomain.test(line)) list.domain.push(line.substring(2));
-	else if (reRegex.test(line)) {
-		if (line.match(reGroup) != null && line.match(reGroup).length < 20)
-			list.anywhere.regex.push(line.substring(1, line.length - 1));
-	} else if (reDomain2.test(line)) list.anywhere.domain.push(line);
+	else if (reRegex.test(line))
+		list.anywhere.regex.push(line.substring(1, line.length - 1));
+	else if (reDomain2.test(line)) list.anywhere.domain.push(line);
 	else if (reAnywhere.test(line)) list.anywhere.plain.push(line);
 }
 
+// generate regex
 function plain2regex(url: string): string {
 	return url
 		.replace(/\./g, '\\.')
