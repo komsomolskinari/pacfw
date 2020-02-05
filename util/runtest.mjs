@@ -39,11 +39,11 @@ function compileTestCase(src) {
 	buildsrc(srcs, options);
 	return out;
 }
-console.log('Multi engine unit test tool v0.0.1-201912191817');
+console.log('Multi engine unit test tool v0.1.0-20200206');
 try {
 	fs.mkdirSync(EMITROOT);
 } catch {}
-const tests = fs.readdirSync(TESTROOT);
+const tests = fs.readdirSync(TESTROOT).filter(f => f.endsWith('.test.ts'));
 const engines = {
 	V8: 'node --experimental-modules',
 	JScript: 'cscript //Nologo',

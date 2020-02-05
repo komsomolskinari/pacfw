@@ -28,12 +28,6 @@ interface GFWRegex {
 }
 
 function parseGFWList(rule: string[]): GFWRegex {
-	const reInitial = /^\|https?:\/\/[0-9a-zA-Z-_.*?&=%~/:]+$/;
-	const reDomain = /^\|\|[0-9a-zA-Z-.*]+\/?$/;
-	const reRegex = /^\/.*\/$/;
-	const reDomain2 = /^[0-9a-zA-Z-.]+$/;
-	const reAnywhere = /^[0-9a-zA-Z-_.*?&=%~/:]+$/;
-
 	const gfwlist: ParsedGFWList = {
 		white: {
 			initial: {
@@ -72,9 +66,9 @@ function parseGFWList(rule: string[]): GFWRegex {
 			line = line.substring(2);
 			list = gfwlist.white;
 		} else list = gfwlist.black;
-		if (reInitial.test(line)) {
+		if (line.substr(0, 1) == '|' && line.substr(1, 1) != '|') {
 			list = list.initial;
-			if (line[5] == 's') {
+			if (line.substr(5, 1) == 's') {
 				line = line.substring(9);
 				list = list.https;
 			} else {
@@ -84,11 +78,10 @@ function parseGFWList(rule: string[]): GFWRegex {
 			list.push(line);
 		}
 		//else if (rePureip.test(line)) list.pureip.push(line); // it's not pure ip, it's string rule
-		else if (reDomain.test(line)) list.domain.push(line.substring(2));
-		else if (reRegex.test(line))
+		else if (line.substr(0, 2) == '||') list.domain.push(line.substring(2));
+		else if (line.substr(0, 1) == '/')
 			list.anywhere.regex.push(line.substring(1, line.length - 1));
-		else if (reDomain2.test(line)) list.anywhere.domain.push(line);
-		else if (reAnywhere.test(line)) list.anywhere.plain.push(line);
+		else list.anywhere.plain.push(line);
 	}
 
 	// generate regex

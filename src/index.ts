@@ -50,7 +50,7 @@ class Smart {
 		return proxy;
 	}
 }
-smart = new Smart(__RULES__, __PROXY__);
+smart = new Smart([...__RULES__, ...(__USERRULES__ ?? [])], __PROXY__);
 function FindProxyForURL(url, host): string {
 	return smart.getProxy(url, host);
 }
