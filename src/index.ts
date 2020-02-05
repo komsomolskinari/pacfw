@@ -1,7 +1,9 @@
+/// ./ruleparser.ts
+
 const proxy = {
 	white: 'DIRECT',
-	black: 'SOCKS5 127.0.0.1:8128; PROXY 127.0.0.1:8123; DIRECT',
-	gray: 'DIRECT; SOCKS5 127.0.0.1:8128; PROXY 127.0.0.1:8123'
+	black: __PROXY__,
+	gray: 'DIRECT;' + __PROXY__
 };
 
 class Smart {
@@ -10,13 +12,13 @@ class Smart {
 	g = proxy.gray;
 	regex = {
 		white: {
-			domain: new RegExp('${regex.white.domain}'),
-			url: new RegExp('${regex.white.url}')
+			domain: new RegExp(regex.white.domain),
+			url: new RegExp(regex.white.url)
 		},
 		black: {
-			pureip: new RegExp('${regex.black.pureip}'),
-			domain: new RegExp('${regex.black.domain}'),
-			url: new RegExp('${regex.black.url}')
+			pureip: new RegExp(regex.black.pureip),
+			domain: new RegExp(regex.black.domain),
+			url: new RegExp(regex.black.url)
 		}
 	};
 	chsips: [number, number, number][] = [];
@@ -28,14 +30,16 @@ class Smart {
 		else {
 			const ip = dnsResolve(host);
 			if (ip == null) proxy = this.b;
-			else if (
+			/*else if (
 				isInNet(ip, '10.0.0.0', '255.0.0.0') ||
 				isInNet(ip, '172.16.0.0', '255.240.0.0') ||
 				isInNet(ip, '192.168.0.0', '255.255.0.0') ||
 				isInNet(ip, '127.0.0.0', '255.255.255.0')
 			)
-				proxy = this.w;
-			else if (this.regex.black.domain.test(host)) proxy = this.b;
+				proxy = this.w;*/ else if (
+				this.regex.black.domain.test(host)
+			)
+				proxy = this.b;
 			else if (this.regex.black.url.test(url)) proxy = this.b;
 			else if (this.regex.black.pureip.test(host)) proxy = this.b;
 			else {
@@ -67,6 +71,6 @@ class Smart {
 	}
 }
 const smart = new Smart();
-function FindProxyForURL(url, host) {
+function FindProxyForURL(url, host): string {
 	return smart.getProxy(url, host);
 }
