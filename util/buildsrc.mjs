@@ -3,6 +3,7 @@ import ts from 'typescript';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// list direct dependency of single file
 export function directDependency(src) {
 	const cwd = path.dirname(src);
 	const l1 = fs
@@ -20,7 +21,9 @@ export function directDependency(src) {
 		: []; // trim
 }
 
+// list all dependency
 export function resolveDependency(src) {
+	// resolve entry file
 	src = path.join('.', src);
 	const depGraph = {};
 	depGraph[src] = directDependency(src);
@@ -46,7 +49,7 @@ export function resolveDependency(src) {
 	//console.log(depGraph);
 
 	const order = {};
-	// calc dep depth tree
+	// calc dependency depth
 	function checkOrder(file, base) {
 		if (base > 100) throw new RangeError('Possible recursive dependency');
 		if (order[file] === undefined || base > order[file]) order[file] = base;
@@ -79,6 +82,7 @@ export function resolveDependency(src) {
 	return flated;
 }
 
+// standard way to build TS file by API
 export function buildsrc(src, option) {
 	const program = ts.createProgram(src, option);
 	const emitResult = program.emit();
