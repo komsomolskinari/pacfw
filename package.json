@@ -21,7 +21,7 @@
 	"files": [
 		"/dist"
 	],
-	"license": "LGPL-3.0",
+	"license": "See LICENSE",
 	"devDependencies": {
 		"@types/node": "^13.7.0",
 		"@typescript-eslint/eslint-plugin": "^2.19.0",
