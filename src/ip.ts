@@ -1,16 +1,23 @@
-function convertAddr4(ip4: string): number {
+type IPRange = [string, string];
+
+// check a ip string or unified address is ipv6
+function isV6(s: string): boolean {
+	// 255.255.255.255/32 , 18
+	if (s.length >= 20) return true;
+	if (s.indexOf(':') >= 0) return true;
+	return false;
+}
+
+function convertAddr4(ip4: string): string {
 	// eslint-disable-next-line @typescript-eslint/camelcase
-	if (typeof convert_addr == 'function') return convert_addr(ip4);
 	const m = ip4.split('.');
 	const ipnum =
-		(parseInt(m[0], 10) << 16) * 256 +
+		(parseInt(m[0], 10) << 16) * 256 + // to keep ipnum > 0
 		(parseInt(m[1], 10) << 16) +
 		(parseInt(m[2], 10) << 8) +
 		parseInt(m[3], 10);
-	return ipnum;
+	return ipnum.toString(16);
 }
-
-// output ipv6 address in all lowercase hex format
 function convertAddr6(ip6: string): string {
 	const ipstr = ip6.split(':');
 	if (ipstr.length < 2) return undefined;
@@ -60,9 +67,14 @@ function convertAddr6(ip6: string): string {
 		ipstr16[6] + ipstr16[7]
 	];
 	if (mappedv4) {
-		ipstrs[3] = convertAddr4(ipstr[ipstr.length - 1]).toString(16);
+		ipstrs[3] = convertAddr4(ipstr[ipstr.length - 1]);
 	}
 	return ipstrs.join('');
+}
+
+// output ip hex string
+function convertAddr(ip46: string): string {
+	return isV6(ip46) ? convertAddr6(ip46) : convertAddr4(ip46);
 }
 
 const hex2int = {
@@ -83,7 +95,6 @@ const hex2int = {
 	e: 14,
 	f: 15
 };
-
 const lmask = [
 	'0000000000000000',
 	'0000000088888888',
@@ -96,22 +107,30 @@ const hmask = [
 	'33337777bbbbffff',
 	'1133557799bbddff'
 ];
-
 const zero32 = '00000000000000000000000000000000';
 const ffff32 = 'ffffffffffffffffffffffffffffffff';
-function net6Range(ip6str: string, bit: number): [string, string] {
-	if (ip6str.indexOf(':') >= 0) ip6str = convertAddr6(ip6str);
+const zero8 = '00000000';
+const ffff8 = 'ffffffff';
+function cidrRange(cidr46: string): IPRange {
+	const v6 = isV6(cidr46);
+
+	const [rawstr, bitstr] = cidr46.split('/');
+	const ipstr = convertAddr(rawstr);
+	const bit = parseInt(bitstr);
+
+	const z = v6 ? zero32 : zero8;
+	const f = v6 ? ffff32 : ffff8;
 	const highdigits = bit / 4;
 	const lastdigitbit = bit % 4;
 
-	const lastdigit = hex2int[ip6str.substr(highdigits, 1)];
-	const llast = lmask[lastdigitbit][lastdigit];
-	const hlast = hmask[lastdigitbit][lastdigit];
+	const lastdigit = hex2int[ipstr.substr(highdigits, 1)];
+	const llast = lmask[lastdigitbit].substr(lastdigit, 1);
+	const hlast = hmask[lastdigitbit].substr(lastdigit, 1);
 
 	const padend = highdigits + 1;
 
-	const l = ip6str.substr(0, highdigits) + llast + zero32.substr(padend);
-	const h = ip6str.substr(0, highdigits) + hlast + ffff32.substr(padend);
+	const l = ipstr.substr(0, highdigits) + llast + z.substr(padend);
+	const h = ipstr.substr(0, highdigits) + hlast + f.substr(padend);
 
 	return [l, h];
 }
