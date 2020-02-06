@@ -1,5 +1,8 @@
 type IPRange = [string, string];
-
+const zero32 = '00000000000000000000000000000000';
+const ffff32 = 'ffffffffffffffffffffffffffffffff';
+const zero8 = '00000000';
+const ffff8 = 'ffffffff';
 // check a ip string or unified address is ipv6
 function isV6(s: string): boolean {
 	// 255.255.255.255/32 , 18
@@ -16,7 +19,8 @@ function convertAddr4(ip4: string): string {
 		(parseInt(m[1], 10) << 16) +
 		(parseInt(m[2], 10) << 8) +
 		parseInt(m[3], 10);
-	return ipnum.toString(16);
+	const ret = ipnum.toString(16);
+	return zero8.substr(ret.length) + ret;
 }
 function convertAddr6(ip6: string): string {
 	const ipstr = ip6.split(':');
@@ -107,10 +111,7 @@ const hmask = [
 	'33337777bbbbffff',
 	'1133557799bbddff'
 ];
-const zero32 = '00000000000000000000000000000000';
-const ffff32 = 'ffffffffffffffffffffffffffffffff';
-const zero8 = '00000000';
-const ffff8 = 'ffffffff';
+
 function cidrRange(cidr46: string): IPRange {
 	const v6 = isV6(cidr46);
 
