@@ -179,6 +179,12 @@ class TestResult<T> {
 	truthy(): void {
 		this.base(__MT__Unused, 'truthy', a => (a ? true : false));
 	}
+	bigger(actual: T): void {
+		this.base(actual, 'bigger', (a, b) => a > b);
+	}
+	smaller(actual: T): void {
+		this.base(actual, 'smaller', (a, b) => a < b);
+	}
 }
 
 function test<T>(name: string, expect: T): TestResult<T> {
