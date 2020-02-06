@@ -1,6 +1,6 @@
 {
 	//	//"include": ["src/**/*.ts"],
-	"exclude": ["dist"],
+	"exclude": ["dist","util/context/env.ts","util/pacruntime/runtime.ts"],
 	"compilerOptions": {
 		"target": "es3",
 		"module": "none",

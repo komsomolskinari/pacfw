@@ -1,3 +1,4 @@
+// standard PAC runtime
 declare function isPlainHostName(host: string): boolean;
 declare function dnsDomainIs(host: string, domain: string): boolean;
 declare function localHostOrDomainIs(host: string, hostdom: string): boolean;

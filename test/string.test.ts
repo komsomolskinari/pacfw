@@ -7,5 +7,3 @@ test(
 	'string in url',
 	FindProxyForURL('http://example.com/tank', 'example.com')
 ).equal(__PROXY__);
-
-log(parseGFWList(['tank']));

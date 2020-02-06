@@ -1,22 +1,11 @@
-function runCommand(cmd: string): string {
-	let retTxt: string;
-	if (typeof WScript !== 'undefined') {
-		// wsh jscript
-		const shell = WScript.CreateObject('WScript.Shell');
-		const result = shell.Exec(cmd);
-		retTxt = result.StdOut.ReadAll() as string;
-	} else {
-		// node v8
-		retTxt = require('child_process')
-			.execSync(cmd)
-			.toString();
-	}
-	return retTxt.trim();
-}
-
 function dnsResolve(host: string): string {
 	return '1.1.1.1';
 }
+
+function dnsResolveEx(host: string): string[] {
+	return ['::1'];
+}
+
 function myIPAddress(): string {
 	return '127.0.0.1';
 }
@@ -53,12 +42,12 @@ function isValidIpAddress(ipchars: string): boolean {
 
 // eslint-disable-next-line @typescript-eslint/camelcase
 function convert_addr(ipchars: string): number {
-	const bytes = ipchars.split('.').map((v: string) => parseInt(v));
+	const bytes = ipchars.split('.');
 	const result =
-		((bytes[0] & 0xff) << 24) |
-		((bytes[1] & 0xff) << 16) |
-		((bytes[2] & 0xff) << 8) |
-		(bytes[3] & 0xff);
+		((parseInt(bytes[0]) & 0xff) << 24) |
+		((parseInt(bytes[1]) & 0xff) << 16) |
+		((parseInt(bytes[2]) & 0xff) << 8) |
+		(parseInt(bytes[3]) & 0xff);
 	return result;
 }
 
