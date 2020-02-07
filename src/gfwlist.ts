@@ -1,16 +1,17 @@
 interface GFWListPart {
-	initial: {
-		http: string[];
-		https: string[];
-	};
+	initial: GFWListInitial;
 	domain: string[];
-	anywhere?: {
-		domain: string[];
-		plain: string[];
-		regex: string[];
-	};
+	anywhere: GFWListAnyWhere;
 }
 
+interface GFWListInitial {
+	http: string[];
+	https: string[];
+}
+interface GFWListAnyWhere {
+	plain: string[];
+	regex: string[];
+}
 interface ParsedGFWList {
 	white: GFWListPart;
 	black: GFWListPart;
@@ -29,23 +30,29 @@ interface GFWRegex {
 
 function parseGFWList(rule: string[]): GFWRegex {
 	const gfwlist: ParsedGFWList = {
+		// @@
 		white: {
-			initial: {
-				http: [],
-				https: []
-			},
-			domain: []
-		},
-		black: {
 			initial: {
 				http: [],
 				https: []
 			},
 			domain: [],
 			anywhere: {
-				domain: [],
 				plain: [],
 				regex: []
+			}
+		},
+		black: {
+			// |
+			initial: {
+				http: [], // |http:
+				https: [] // |https
+			},
+			// ||
+			domain: [],
+			anywhere: {
+				plain: [], // <else>
+				regex: [] // /
 			}
 		}
 	};
@@ -60,25 +67,23 @@ function parseGFWList(rule: string[]): GFWRegex {
 		}
 	};
 	// Prepare GFWList
-	let list;
 	for (let line of rule) {
+		let list: GFWListPart = gfwlist.black;
 		if (line.substr(0, 2) == '@@') {
 			line = line.substring(2);
 			list = gfwlist.white;
-		} else list = gfwlist.black;
+		}
 		if (line.substr(0, 1) == '|' && line.substr(1, 1) != '|') {
-			list = list.initial;
+			const init = list.initial;
 			if (line.substr(5, 1) == 's') {
 				line = line.substring(9);
-				list = list.https;
+				init.https.push(line);
 			} else {
 				line = line.substring(8);
-				list = list.http;
+				init.http.push(line);
 			}
-			list.push(line);
-		}
-		//else if (rePureip.test(line)) list.pureip.push(line); // it's not pure ip, it's string rule
-		else if (line.substr(0, 2) == '||') list.domain.push(line.substring(2));
+		} else if (line.substr(0, 2) == '||')
+			list.domain.push(line.substring(2));
 		else if (line.substr(0, 1) == '/')
 			list.anywhere.regex.push(line.substring(1, line.length - 1));
 		else list.anywhere.plain.push(line);
@@ -107,64 +112,41 @@ function parseGFWList(rule: string[]): GFWRegex {
 		return r.join('|');
 	}
 
-	let regArray = []; // ready for regex.black.url
-	if (
-		gfwlist.black.initial.http.length > 0 ||
-		gfwlist.black.initial.https.length > 0
-	) {
-		if (gfwlist.black.initial.http.length)
-			regArray.push(
-				`://(${array2re(gfwlist.black.initial.http, plain2regex)})`
-			);
-		if (gfwlist.black.initial.https.length)
-			regArray.push(
-				`s://(${array2re(gfwlist.black.initial.https, plain2regex)})`
-			);
-		regArray = [`http(${regArray.join('|')})`];
+	function initialRule2RePart(initial: GFWListInitial): string {
+		const initialRe = [];
+		// |rule
+		if (initial.http.length)
+			initialRe.push(`://(${array2re(initial.http, plain2regex)})`);
+		if (initial.https.length)
+			initialRe.push(`s://(${array2re(initial.https, plain2regex)})`);
+		return initialRe.join('|');
 	}
-	if (gfwlist.black.anywhere.plain.length)
-		regArray.push(array2re(gfwlist.black.anywhere.plain, plain2regex));
-	if (gfwlist.black.anywhere.regex.length)
-		regArray.push(gfwlist.black.anywhere.regex.join('|'));
-	if (regArray.length) regex.black.url = new RegExp(regArray.join('|'));
 
-	regArray = []; // ready for regex.black.domain
-	if (gfwlist.black.domain.length)
-		regArray.push(
-			array2re(gfwlist.black.domain, domain =>
-				domain.replace(/\./g, '\\.').replace(/\*/g, '.*')
-			)
-		);
-	if (gfwlist.black.anywhere.domain.length)
-		regArray.push(
-			array2re(gfwlist.black.anywhere.domain, domain2 =>
-				(domain2[0] == '.' ? domain2.substring(1) : domain2)
-					.replace(/\./g, '\\.')
-					.replace(/\*/g, '.*')
-			)
-		);
-	if (regArray.length)
-		regex.black.domain = new RegExp(`^(.+\\.)?(${regArray.join('|')})$`);
+	function escapeDomainRule(i: string): string {
+		return i.replace(/\./g, '\\.').replace(/\*/g, '.*');
+	}
+	function domainRule2Re(domain: string[]): RegExp {
+		if (domain.length == 0) return null;
+		return new RegExp(`^(.+\\.)?(${array2re(domain, escapeDomainRule)})$`);
+	}
 
-	regArray = []; // ready for smart.regex.white.url
-	if (gfwlist.white.initial.http.length)
-		regArray.push(
-			`://(${array2re(gfwlist.white.initial.http, plain2regex)})`
-		);
+	function urlRule2Re(part: GFWListPart): RegExp {
+		const p = [];
+		// |
+		const initialPart = initialRule2RePart(part.initial);
+		if (initialPart.length) p.push(`http(${initialPart})`);
+		// string
+		if (part.anywhere.plain.length)
+			p.push(array2re(part.anywhere.plain, plain2regex));
+		// /
+		if (part.anywhere.regex.length) p.push(part.anywhere.regex.join('|'));
+		return p.length ? new RegExp(p.join('|')) : null;
+	}
 
-	if (gfwlist.white.initial.https.length)
-		regArray.push(
-			`s://(${array2re(gfwlist.white.initial.https, plain2regex)})`
-		);
-	if (regArray.length)
-		regex.white.url = new RegExp(`^http(${regArray.join('|')})`);
-
-	if (gfwlist.white.domain.length)
-		regex.white.domain = new RegExp(
-			`^(.+\\.)?(${array2re(gfwlist.white.domain, domain =>
-				domain.replace(/\./g, '\\.').replace(/\*/g, '.*')
-			)})$`
-		);
+	regex.black.url = urlRule2Re(gfwlist.black);
+	regex.black.domain = domainRule2Re(gfwlist.black.domain);
+	regex.white.url = urlRule2Re(gfwlist.white);
+	regex.white.domain = domainRule2Re(gfwlist.white.domain);
 
 	return regex;
 }
