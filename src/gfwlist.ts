@@ -28,7 +28,7 @@ interface GFWRegex {
 	};
 }
 
-function parseGFWList(rule: string[]): GFWRegex {
+function parseGFWList(rule: string[]): ParsedGFWList {
 	const gfwlist: ParsedGFWList = {
 		// @@
 		white: {
@@ -56,16 +56,7 @@ function parseGFWList(rule: string[]): GFWRegex {
 			}
 		}
 	};
-	const regex: GFWRegex = {
-		white: {
-			domain: null,
-			url: null
-		},
-		black: {
-			domain: null,
-			url: null
-		}
-	};
+
 	// Prepare GFWList
 	for (let line of rule) {
 		let list: GFWListPart = gfwlist.black;
@@ -88,9 +79,11 @@ function parseGFWList(rule: string[]): GFWRegex {
 			list.anywhere.regex.push(line.substring(1, line.length - 1));
 		else list.anywhere.plain.push(line);
 	}
+	return gfwlist;
+}
 
-	// generate regex
-	function plain2regex(url: string): string {
+function parsedGFWListToRegex(gfwlist: ParsedGFWList): GFWRegex {
+	function escapeRegex(url: string): string {
 		return url
 			.replace(/\./g, '\\.')
 			.replace(/\$/g, '\\$')
@@ -103,7 +96,7 @@ function parseGFWList(rule: string[]): GFWRegex {
 			.replace(/\?/g, '\\?')
 			.replace(/\*/g, '\\.*');
 	}
-
+	// array.map.join polyfill
 	function array2re(arr: string[], fn: (string) => string): string {
 		const r: string[] = [];
 		for (const i of arr) {
@@ -116,18 +109,18 @@ function parseGFWList(rule: string[]): GFWRegex {
 		const initialRe = [];
 		// |rule
 		if (initial.http.length)
-			initialRe.push(`://(${array2re(initial.http, plain2regex)})`);
+			initialRe.push(`://(${array2re(initial.http, escapeRegex)})`);
 		if (initial.https.length)
-			initialRe.push(`s://(${array2re(initial.https, plain2regex)})`);
+			initialRe.push(`s://(${array2re(initial.https, escapeRegex)})`);
 		return initialRe.join('|');
-	}
-
-	function escapeDomainRule(i: string): string {
-		return i.replace(/\./g, '\\.').replace(/\*/g, '.*');
 	}
 	function domainRule2Re(domain: string[]): RegExp {
 		if (domain.length == 0) return null;
-		return new RegExp(`^(.+\\.)?(${array2re(domain, escapeDomainRule)})$`);
+		return new RegExp(
+			`^(.+\\.)?(${array2re(domain, i =>
+				i.replace(/\./g, '\\.').replace(/\*/g, '.*')
+			)})$`
+		);
 	}
 
 	function urlRule2Re(part: GFWListPart): RegExp {
@@ -137,25 +130,32 @@ function parseGFWList(rule: string[]): GFWRegex {
 		if (initialPart.length) p.push(`http(${initialPart})`);
 		// string
 		if (part.anywhere.plain.length)
-			p.push(array2re(part.anywhere.plain, plain2regex));
+			p.push(array2re(part.anywhere.plain, escapeRegex));
 		// /
 		if (part.anywhere.regex.length) p.push(part.anywhere.regex.join('|'));
 		return p.length ? new RegExp(p.join('|')) : null;
 	}
+	return {
+		white: {
+			domain: domainRule2Re(gfwlist.white.domain),
+			url: urlRule2Re(gfwlist.white)
+		},
+		black: {
+			domain: domainRule2Re(gfwlist.black.domain),
+			url: urlRule2Re(gfwlist.black)
+		}
+	};
+}
 
-	regex.black.url = urlRule2Re(gfwlist.black);
-	regex.black.domain = domainRule2Re(gfwlist.black.domain);
-	regex.white.url = urlRule2Re(gfwlist.white);
-	regex.white.domain = domainRule2Re(gfwlist.white.domain);
-
-	return regex;
+function GFWListToRegex(rule: string[]): GFWRegex {
+	return parsedGFWListToRegex(parseGFWList(rule));
 }
 
 class GFWListMatcher {
-	regex = parseGFWList(__RULES__);
+	regex: GFWRegex;
 
 	constructor(rules: string[]) {
-		this.regex = parseGFWList(rules);
+		this.regex = GFWListToRegex(rules);
 	}
 
 	getProxy(url, host): string {
