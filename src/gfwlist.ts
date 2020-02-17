@@ -158,13 +158,32 @@ class GFWListMatcher {
 		this.regex = GFWListToRegex(rules);
 	}
 
+	/**
+	 *
+	 * @param url
+	 * @param host
+	 * @returns true: proxy, false: direct, null: no match
+	 */
+	match(url, host): boolean {
+		if (this.regex.white.domain?.test(host)) return false;
+		if (this.regex.white.url?.test(url)) return false;
+		if (!isResolvable(host)) return true;
+
+		//const ip = dnsResolve(host);
+		//if (ip == null) return true;
+		if (this.regex.black.domain?.test(host)) return true;
+		if (this.regex.black.url?.test(url)) return true;
+
+		return null;
+	}
+
 	getProxy(url, host): string {
 		if (this.regex.white.domain?.test(host)) return __DIRECT__;
 		if (this.regex.white.url?.test(url)) return __DIRECT__;
 		if (!isResolvable(host)) return __PROXY__;
 
-		const ip = dnsResolve(host);
-		if (ip == null) return __PROXY__;
+		//const ip = dnsResolve(host);
+		//if (ip == null) return __PROXY__;
 		if (this.regex.black.domain?.test(host)) return __PROXY__;
 		if (this.regex.black.url?.test(url)) return __PROXY__;
 
