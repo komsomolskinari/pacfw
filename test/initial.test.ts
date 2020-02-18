@@ -1,7 +1,7 @@
 /// ../src/index.ts
 SetEnv(['|http://baidu.com/'], []);
 test('https', FindProxyForURL('https://baidu.com/', 'baidu.com')).equal(
-	__DIRECT__
+	'DIRECT'
 );
 test(
 	'http with path',

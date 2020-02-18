@@ -176,20 +176,4 @@ class GFWListMatcher implements Matcher {
 
 		return null;
 	}
-
-	getProxy(url, host): string {
-		if (this.regex.white.domain?.test(host)) return __DIRECT__;
-		if (this.regex.white.url?.test(url)) return __DIRECT__;
-		if (!isResolvable(host)) return __PROXY__;
-
-		//const ip = dnsResolve(host);
-		//if (ip == null) return __PROXY__;
-		if (this.regex.black.domain?.test(host)) return __PROXY__;
-		if (this.regex.black.url?.test(url)) return __PROXY__;
-
-		//const ipnum = convertAddr4(ip);
-		// TODO: call matcher
-
-		return __DIRECT__;
-	}
 }

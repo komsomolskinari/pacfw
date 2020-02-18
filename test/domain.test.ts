@@ -8,8 +8,8 @@ test(
 test(
 	'api.aixcoder.com',
 	FindProxyForURL('http://api.aixcoder.com', 'api.aixcoder.com')
-).equal(__DIRECT__);
+).equal('DIRECT');
 test(
 	'api.aixcoder.com/api.ai',
 	FindProxyForURL('http://api.aixcoder.com/api.ai', 'api.aixcoder.com')
-).equal(__DIRECT__);
+).equal('DIRECT');
