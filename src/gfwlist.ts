@@ -151,7 +151,7 @@ function GFWListToRegex(rule: string[]): GFWRegex {
 	return parsedGFWListToRegex(parseGFWList(rule));
 }
 
-class GFWListMatcher {
+class GFWListMatcher implements Matcher {
 	regex: GFWRegex;
 
 	constructor(rules: string[]) {
@@ -164,7 +164,7 @@ class GFWListMatcher {
 	 * @param host
 	 * @returns true: proxy, false: direct, null: no match
 	 */
-	match(url, host): boolean {
+	match(url: string, host: string): boolean {
 		if (this.regex.white.domain?.test(host)) return false;
 		if (this.regex.white.url?.test(url)) return false;
 		if (!isResolvable(host)) return true;
